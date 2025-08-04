@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mvvm_course/screens/testing_screen.dart';
+import 'package:mvvm_course/view_models/movies/movies_bloc.dart';
+import 'package:mvvm_course/view_models/theme/theme_bloc.dart';
 
 import 'constants/my_theme_data.dart';
 import 'screens/movies_screen.dart';
@@ -28,13 +31,23 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: getIt<NavigationService>().navigatorKey,
-      debugShowCheckedModeBanner: false,
-      title: 'Movies App',
-      theme: MyThemeData.lightTheme,
-      home: TestingScreen(),
-      // const SplashScreen(), //const MovieDetailsScreen(), //const FavoritesScreen(), //const MoviesScreen(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => getIt<ThemeBloc>()..add(LoadThemeEvent())),
+        BlocProvider(create: (_) => getIt<MoviesBloc>())
+      ],
+      child: BlocBuilder<ThemeBloc, ThemeState>(
+        builder: (context, state) {
+          return MaterialApp(
+            navigatorKey: getIt<NavigationService>().navigatorKey,
+            debugShowCheckedModeBanner: false,
+            title: 'Movies App',
+            theme: state is LightThemeState ? MyThemeData.lightTheme : MyThemeData.darkTheme,
+            home: SplashScreen(),
+            // const SplashScreen(), //const MovieDetailsScreen(), //const FavoritesScreen(), //const MoviesScreen(),
+          );
+        },
+      ),
     );
   }
 }
